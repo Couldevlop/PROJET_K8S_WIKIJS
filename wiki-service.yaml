@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: wiki
 spec:
-  type: NodePort
+  type: LoadBalancer   #NodePort
   selector:
     app: wiki
   ports:

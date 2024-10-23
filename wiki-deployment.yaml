@@ -14,8 +14,10 @@ spec:
     spec:
       containers:
       - name: wiki
-        image: ghcr.io/requarks/wiki:2
+        image: ghcr.io/requarks/wiki:2  # Image de Wiki.js
         env:
+        - name: DB_TYPE
+          value: postgres
         - name: DB_HOST
           value: db
         - name: DB_USER
@@ -33,3 +35,38 @@ spec:
           value: SuperSecret123
         ports:
         - containerPort: 3000
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+
+      - name: nginx
+        image: thomcoul/custom-nginx:latest  # Image custom NGINX
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: nginx-config-volume
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+
+      volumes:
+      - name: nginx-config-volume
+        configMap:
+          name: nginx-config
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: wiki
+spec:
+  selector:
+    app: wiki
+  ports:
+  - protocol: TCP
+    port: 80   # NGINX écoute sur le port 80
+    targetPort: 80
+  type: NodePort  # Pour exposer le service vers l'extérieur
