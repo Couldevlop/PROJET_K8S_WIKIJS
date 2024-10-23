@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wiki
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wiki
+  template:
+    metadata:
+      labels:
+        app: wiki
+    spec:
+      containers:
+      - name: wiki
+        image: ghcr.io/requarks/wiki:2
+        env:
+        - name: DB_TYPE
+          value: postgres
+        - name: DB_HOST
+          value: db
+        - name: DB_USER
+          value: wikijs
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: wiki-db-secret
+              key: DB_PASS
+        - name: DB_NAME
+          value: wiki
+        - name: DB_PORT                 # Ajout du port de la base de données
+          value: "5432"
+        - name: ADMIN_EMAIL
+          value: coulwao@gmail.com
+        - name: ADMIN_PASS
+          value: SuperSecret123
+        ports:
+        - containerPort: 3000
